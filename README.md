@@ -26,6 +26,16 @@ To enable the service provider in versions prior to Laravel 5.4, edit the config
     ];
 ```
 
+Enable the facade by editing config/app.php:
+
+```php
+    'aliases' => [
+        ...
+        'FrontendAsset' => HnhDigital\LaravelFrontendAssetLoader\Facade::class,
+        ...
+    ];
+```
+
 ## Usage
 
 
