@@ -2,7 +2,6 @@
 
 namespace HnhDigital\LaravelFrontendAssetLoader;
 
-use Config;
 use Roumen\Asset\Asset as RoumenAsset;
 
 class FrontendAsset
@@ -16,7 +15,7 @@ class FrontendAsset
      */
     public function version($name, $version = false)
     {
-        return (empty($version)) ? Config::get('resource.'.$name.'.1') : $version;
+        return (empty($version)) ? config('frontend-assets.'.$name.'.1') : $version;
     }
 
     /**
@@ -216,7 +215,7 @@ class FrontendAsset
 
         $class_name = false;
 
-        if ($asset_details = config('resource.'.$asset_name, false)) {
+        if ($asset_details = config('frontend-assets.'.$asset_name, false)) {
             $class_name = array_get($asset_details, 0, false);
         }
 
