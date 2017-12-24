@@ -69,6 +69,6 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return ['frontend-asset'];
+        return ['FrontendAsset'];
     }
 }

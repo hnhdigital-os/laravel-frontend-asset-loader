@@ -2,12 +2,12 @@
 
 namespace HnhDigital\LaravelFrontendAssetLoader;
 
-use Resource;
+use FrontendAsset;
 
 class AutoInit
 {
     public function __construct()
     {
-        Resource::add('vendor/autoinit.js');
+        FrontendAsset::add('vendor/autoinit.js');
     }
 }
