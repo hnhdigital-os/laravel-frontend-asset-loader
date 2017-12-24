@@ -1,0 +1,38 @@
+{
+    "name": "hnhdigital-os/laravel-frontend-asset-loader",
+    "description": "Provides a simplified approach to loading assets",
+    "keywords": ["laravel","illuminate","assets"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rocco Howard",
+            "email": "rocco@hnh.digital"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "roumen/asset": "dev-master",
+        "hnhdigital-os/laravel-frontend-assets": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "5.*",
+        "illuminate/database": "4.*|5.*",
+        "symfony/process": "~2.3",
+        "codeclimate/php-test-reporter": "dev-master"
+    },
+    "autoload": {
+        "files": [
+            "src/helper.php"
+        ],
+        "psr-4": {
+            "HnhDigital\\LaravelFrontendAssetLoader\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "HnhDigital\\LaravelFrontendAssetLoader\\ServiceProvider"
+            ]
+        }
+    }
+}

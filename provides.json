@@ -1,0 +1,11 @@
+{
+  "providers": [
+    "HnhDigital\\LaravelFrontendAssetLoader\\ServiceProvider"
+  ],
+  "aliases": [
+    {
+      "alias": "Resource",
+      "facade": "HnhDigital\\LaravelFrontendAssetLoader\\Facade"
+    }
+  ]
+}
