@@ -248,14 +248,13 @@ class FrontendAsset
         $file = str_replace('.', '/', $file);
 
         if (substr($file, -1) === '*') {
-
             $folder = dirname(substr($file, 0, -1));
             $base_folder = basename(substr($file, 0, -1));
 
             foreach ($file_extensions as $extension) {
                 $extension_folder = $folder.'/'.$extension.'/'.$base_folder;
                 $folder_contents = scandir(resource_path().'/views/'.$extension_folder);
-                
+
                 foreach ($folder_contents as $folder_file) {
                     if ($folder_file == '.' || $folder_file == '..') {
                         continue;
@@ -295,9 +294,9 @@ class FrontendAsset
     /**
      * Load a file.
      *
-     * @param  string $file_name
-     * @param  string $extension
-     * @param  string $full_path
+     * @param string $file_name
+     * @param string $extension
+     * @param string $full_path
      *
      * @return void
      */
@@ -334,6 +333,7 @@ class FrontendAsset
         if (substr($file, 0, 4) === 'http') {
             return $file;
         }
+
         try {
             if (env('APP_ASSET_SOURCE', 'build') === 'build') {
                 $elixir_path = elixir($file);
