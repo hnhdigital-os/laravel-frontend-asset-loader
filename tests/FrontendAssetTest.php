@@ -2,11 +2,11 @@
 
 namespace HnhDigital\LaravelFrontendAssetLoader\Tests;
 
-use HnhDigital\LaravelFrontendAssetLoader\Resource;
+use HnhDigital\LaravelFrontendAssetLoader\FrontendAsset;
 use PHPUnit\Framework\TestCase;
-use Roumen\Asset\Asset;
+use Roumen\Asset\RoumenAsset;
 
-class ResourceTest extends TestCase
+class FrontendAssetTest extends TestCase
 {
     /**
      * Test the add method.
@@ -15,11 +15,11 @@ class ResourceTest extends TestCase
      */
     public function testAdd()
     {
-        $res = new Resource();
+        $res = new FrontendAsset();
 
         $asset = 'style.css';
         $res->add($asset);
-        $this->assertEquals(true, isset(Asset::$css['/asset/'.$asset]));
+        $this->assertEquals(true, isset(RoumenAsset::$css['/asset/'.$asset]));
     }
 
     /**
@@ -29,11 +29,11 @@ class ResourceTest extends TestCase
      */
     public function testAddScript()
     {
-        $res = new Resource();
+        $res = new FrontendAsset();
 
         $asset = 'alert(\'test1\');';
         $res->addScript($asset);
-        $this->assertEquals($asset, Asset::$scripts['footer'][0]);
+        $this->assertEquals($asset, RoumenAsset::$scripts['footer'][0]);
     }
 
     /**
@@ -43,8 +43,8 @@ class ResourceTest extends TestCase
      */
     public function testReverseStylesOrder()
     {
-        Asset::$scripts['footer'] = [];
-        $res = new Resource();
+        RoumenAsset::$scripts['footer'] = [];
+        $res = new FrontendAsset();
 
         $asset1 = 'alert(\'test1\');';
         $res->addScript($asset1);
@@ -54,10 +54,10 @@ class ResourceTest extends TestCase
 
         $res->reverseStylesOrder();
 
-        $scripts = array_values(Asset::$scripts['footer']);
+        $scripts = array_values(RoumenAsset::$scripts['footer']);
 
-        $this->assertEquals($asset1, Asset::$scripts['footer'][0]);
-        $this->assertEquals($asset2, Asset::$scripts['footer'][1]);
+        $this->assertEquals($asset1, RoumenAsset::$scripts['footer'][0]);
+        $this->assertEquals($asset2, RoumenAsset::$scripts['footer'][1]);
         $this->assertEquals($asset2, $scripts[0]);
         $this->assertEquals($asset1, $scripts[1]);
     }
@@ -69,13 +69,13 @@ class ResourceTest extends TestCase
      */
     public function testAddStyle()
     {
-        Asset::$styles = [];
+        RoumenAsset::$styles = [];
 
-        $res = new Resource();
+        $res = new FrontendAsset();
 
         $asset = 'body { color: #FFF; }';
         $res->addStyle($asset);
-        $this->assertEquals($asset, Asset::$styles['header'][0]);
+        $this->assertEquals($asset, RoumenAsset::$styles['header'][0]);
     }
 
     /**
@@ -85,9 +85,9 @@ class ResourceTest extends TestCase
      */
     public function testAddFirst()
     {
-        Asset::$css = [];
+        RoumenAsset::$css = [];
 
-        $res = new Resource();
+        $res = new FrontendAsset();
 
         $asset = 'style.css';
         $res->add($asset);
@@ -95,7 +95,7 @@ class ResourceTest extends TestCase
         $asset = 'style1.css';
         $res->addFirst($asset);
 
-        $styles = array_keys(Asset::$css);
+        $styles = array_keys(RoumenAsset::$css);
         $this->assertEquals('/asset/'.$asset, $styles[0]);
     }
 
@@ -106,9 +106,9 @@ class ResourceTest extends TestCase
      */
     public function testAddAfter()
     {
-        Asset::$css = [];
+        RoumenAsset::$css = [];
 
-        $res = new Resource();
+        $res = new FrontendAsset();
 
         $asset1 = 'style.css';
         $res->add($asset1);
@@ -119,7 +119,7 @@ class ResourceTest extends TestCase
         $asset3 = 'style2.css';
         $res->addAfter($asset3, $asset1);
 
-        $styles = array_keys(Asset::$css);
+        $styles = array_keys(RoumenAsset::$css);
 
         $this->assertEquals('/asset/'.$asset3, $styles[1]);
     }
@@ -131,7 +131,7 @@ class ResourceTest extends TestCase
      */
     public function testContainer()
     {
-        $res = new Resource();
+        $res = new FrontendAsset();
         $res->container('jquery');
     }
 
@@ -207,7 +207,7 @@ class ResourceTest extends TestCase
     {
         global $env;
 
-        $res = new Resource();
+        $res = new FrontendAsset();
 
         // External URL's
         $url = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png';
