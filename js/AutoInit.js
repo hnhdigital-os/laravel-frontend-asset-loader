@@ -1,35 +1,107 @@
 
-// Auto trigger intialization.
-$(function() {
+/**
+ * Frontend Assets.
+ *
+ * @type {Object}
+ */
+$.frontendAssets = {
+
+  /**
+   * Stores the init functions.
+   *
+   * @type {Object}
+   */
+  scripts: {},
+
+  /**
+   * Startup.
+   *
+   * @type {Object}
+   */
+  startup: {},
+
+  /**
+   * Storage.
+   *
+   * @type {Object}
+   */
+  storage: {},
+
+  /**
+   * Auto init any extensions.
+   *
+   * @return void
+   */
+  autoInit: function() {
     $('[class*="init-"]:visible').each(function(key, element) {
-        result = $.grep($(element).attr('class').split(' '), function(s) { return s.match(new RegExp('init-')) });
-        result.forEach(function(class_name) {
-            $(element).trigger('extension::'+class_name.replace('init-', '')+'::init');
-        });
+      result = $.grep($(element).attr('class').split(' '), function(s) { return s.match(new RegExp('init-')) });
+      result.forEach(function(class_name) {
+        $(element).trigger('extension::'+class_name.replace('init-', '')+'::init');
+      });
     });
 
-    $('body').on('extensions::init', findAndInit);
-    $('ul.nav-tabs a').on('shown.bs.tab', findAndInit);
+    $('body').on('extensions::init', $.frontendAssets.init);
+    $('ul.nav-tabs a').on('shown.bs.tab', $.frontendAssets.init);
+  },
+
+  register: function(extension, init_function, setup_function) {
+    $.frontendAssets.scripts[extension] = init_function;
+    $.frontendAssets.startup[extension] = setup_function;
+    $.frontendAssets.storage[extension] = {};
+    $('.init-'+extension).on('extension::bs-tooltip::init', init_function);
+  },
+
+  captureTrigger: function(event_name) {
+    if (typeof event_name == 'string' && event_name.match(new RegExp('^extension::(.*)::init$')) != null) {
+      var extension = event_name.replace('init-', '');
+      if (typeof $.frontendAssets.startup[extension] != 'undefined') {
+        $.frontendAssets.startup[extension]();
+        delete $.frontendAssets.startup[extension];
+      }
+    }
+  },
+
+  /**
+   * Init any discovered extensions.
+   *
+   * @return void
+   */
+  init: function findAndInit(event, restrict_search) {
+    var search_criteria = '[class*="init-"]:visible';
+
+    if (typeof restrict_search == 'object') {
+      var search_result = $(restrict_search).find(search_criteria);
+    } else if (typeof restrict_search == 'string') {
+      var search_result = $(restrict_search + ' ' + search_criteria)
+    } else {
+      var search_result = $(search_criteria);
+    }
+
+    search_result.each(function(key, element) {
+      var element_init_classes = $.grep($(element).attr('class').split(' '), function(s) { return s.match(new RegExp('init-')) });
+      element_init_classes.forEach(function(class_name) {
+        var extension = class_name.replace('init-', '');
+        if (typeof $.frontendAssets.scripts[extension] != 'undefined') {
+          $(element).on('extension::'+extension+'::init', $.frontendAssets.scripts[extension]);
+          $(element).trigger('extension::'+extension+'::init');
+        }
+      });
+    });
+  }
+};
+
+(function ($) {
+  var trigger = $.fn['trigger'];
+  $.fn['trigger'] = function(e) {
+    $.frontendAssets.captureTrigger(e.type);
+    return trigger.apply(this, arguments);
+  }
+})(jQuery);
+
+
+$(function() {
+  $.frontendAssets.autoInit();
 });
 
-function findAndInit(event, restrict_search) {
-    $('[class*="init-"]:visible').each(function(key, element) {
-        result = $.grep($(element).attr('class').split(' '), function(s) { return s.match(new RegExp('init-')) });
-        result.forEach(function(class_name) {
-
-            if (typeof restrict_search == 'object') {
-                result = $(restrict_search).find('.' + class_name);
-            } else if (typeof restrict_search == 'string') {
-                result = $(restrict_search + ' .' + class_name)
-            } else {
-                result = $(' .' + class_name);
-            }
-
-            result.each(function(key, element) {
-                $(element).trigger('extension::'+class_name.replace('init-', '')+'::init');
-            });
-        });
-    });
-}
-
-var findAndApplyScriptExtensions = findAndInit;
+// Legacy.
+var findAndApplyScriptExtensions = findAndInit = $.frontendAssets.init;
