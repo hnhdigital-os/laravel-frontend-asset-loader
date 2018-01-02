@@ -1,6 +1,5 @@
 <?php
 
-use HnhDigital\LaravelFrontendAssetLoader\Resource;
 
 function hookAddClassHtmlTag($class_name)
 {
