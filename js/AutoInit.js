@@ -31,7 +31,7 @@ $.frontendAssets = {
    * @return void
    */
   autoInit: function() {
-    $('[class*="init-"]:visible').each(function(key, element) {
+    $('[class*="init-"]').each(function(key, element) {
       result = $.grep(
         $(element)
           .attr('class')
@@ -77,7 +77,7 @@ $.frontendAssets = {
    * @return void
    */
   init: function findAndInit(event, restrict_search) {
-    var search_criteria = '[class*="init-"]:visible';
+    var search_criteria = '[class*="init-"]';
 
     if (typeof restrict_search == 'object') {
       var search_result = $(restrict_search).find(search_criteria);
