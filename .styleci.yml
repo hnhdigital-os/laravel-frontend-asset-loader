@@ -1,2 +1,3 @@
 php: true
-js: true
+js:
+  tab-width: 2
