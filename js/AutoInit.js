@@ -31,7 +31,7 @@ $.frontendAssets = {
    * @return void
    */
   autoInit: function() {
-    $('[class*="init-"]').each(function(key, element) {
+    $('[class*="init-"]:visible').each(function(key, element) {
       result = $.grep(
         $(element)
           .attr('class')
@@ -41,8 +41,14 @@ $.frontendAssets = {
         }
       );
       result.forEach(function(class_name) {
+        var extension = class_name.replace('init-', '');
+        $(element).on(
+            'extension::' + extension + '::init',
+            $.frontendAssets.scripts[extension]
+          );
+
         $(element).trigger(
-          'extension::' + class_name.replace('init-', '') + '::init'
+          'extension::' + extension + '::init'
         );
       });
     });
@@ -76,8 +82,8 @@ $.frontendAssets = {
    *
    * @return void
    */
-  init: function findAndInit(event, restrict_search) {
-    var search_criteria = '[class*="init-"]';
+  init: function(event, restrict_search) {
+    var search_criteria = '[class*="init-"]:visible';
 
     if (typeof restrict_search == 'object') {
       var search_result = $(restrict_search).find(search_criteria);
