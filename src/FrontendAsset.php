@@ -9,6 +9,37 @@ class FrontendAsset
     private static $containers = [];
 
     /**
+     * The domain for assets.
+     *
+     * @var string
+     */
+    protected static $domain;
+
+    /**
+     * Set the domain.
+     *
+     * @param string $domain
+     *
+     * @return $this
+     */
+    public function setDomain($domain)
+    {
+        self::$domain = rtrim($domain, '/');
+
+        return $this;
+    }
+
+    /**
+     * Get the domain.
+     *
+     * @return string
+     */
+    public function getDomain()
+    {
+        return self::$domain;
+    }
+
+    /**
      * Get the version of the given resource.
      *
      * @return string
