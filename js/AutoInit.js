@@ -65,10 +65,7 @@ $.frontendAssets = {
   },
 
   captureTrigger: function(event_name) {
-    if (
-      typeof event_name == 'string' &&
-      event_name.match(new RegExp('^extension::(.*)::init$')) != null
-    ) {
+    if (typeof event_name == 'string' && event_name.match(new RegExp('^extension::(.*)::init$')) != null) {
       var extension = event_name.replace('init-', '');
       if (typeof $.frontendAssets.startup[extension] != 'undefined') {
         $.frontendAssets.startup[extension]();
@@ -105,10 +102,7 @@ $.frontendAssets = {
       element_init_classes.forEach(function(class_name) {
         var extension = class_name.replace('init-', '');
         if (typeof $.frontendAssets.scripts[extension] != 'undefined') {
-          $(element).on(
-            'extension::' + extension + '::init',
-            $.frontendAssets.scripts[extension]
-          );
+          $(element).on('extension::' + extension + '::init', $.frontendAssets.scripts[extension]);
           $(element).trigger('extension::' + extension + '::init');
         }
       });
