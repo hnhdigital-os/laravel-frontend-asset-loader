@@ -57,10 +57,13 @@ $.frontendAssets = {
     $('ul.nav-tabs a').on('shown.bs.tab', $.frontendAssets.init);
   },
 
-  register: function(extension, init_function, setup_function) {
+  register: function(extension, init_function, setup_function, default_storage) {
     $.frontendAssets.scripts[extension] = init_function;
     $.frontendAssets.startup[extension] = setup_function;
-    $.frontendAssets.storage[extension] = {};
+    if (typeof default_storage == 'undefined') {
+      default_storage = {};
+    }
+    $.frontendAssets.storage[extension] = default_storage;
     $('.init-' + extension).on('extension::bs-tooltip::init', init_function);
   },
 
