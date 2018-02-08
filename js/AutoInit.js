@@ -31,30 +31,18 @@ $.frontendAssets = {
    * @return void
    */
   autoInit: function() {
-    $('[class*="init-"]:visible').each(function(key, element) {
-      result = $.grep(
-        $(element)
-          .attr('class')
-          .split(' '),
-        function(s) {
-          return s.match(new RegExp('init-'));
-        }
-      );
-      result.forEach(function(class_name) {
-        var extension = class_name.replace('init-', '');
-        $(element).on(
-            'extension::' + extension + '::init',
-            $.frontendAssets.scripts[extension]
-          );
+    $.frontendAssets.init();
 
-        $(element).trigger(
-          'extension::' + extension + '::init'
-        );
-      });
+    $('body').on('extensions::init', function() {
+      $.frontendAssets.init();
     });
 
-    $('body').on('extensions::init', $.frontendAssets.init);
-    $('ul.nav-tabs a').on('shown.bs.tab', $.frontendAssets.init);
+    $('ul.nav-tabs a').on('shown.bs.tab', function(event) {
+      if ($($(this).attr('href')).length > 0) {
+        console.log('ul.nav-tabs a [shown.bs.tab]');
+        $.frontendAssets.init(event, $(this).attr('href'));
+      }
+    });
   },
 
   register: function(extension, init_function, setup_function, default_storage) {
@@ -64,7 +52,7 @@ $.frontendAssets = {
       default_storage = {};
     }
     $.frontendAssets.storage[extension] = default_storage;
-    $('.init-' + extension).on('extension::bs-tooltip::init', init_function);
+    $('.init-' + extension).on('extension::' + extension + '::init', init_function);
   },
 
   captureTrigger: function(event_name) {
@@ -83,7 +71,7 @@ $.frontendAssets = {
    * @return void
    */
   init: function(event, restrict_search) {
-    var search_criteria = '[class*="init-"]:visible';
+    var search_criteria = '[class*="init-"]:not([class="inited"])';
 
     if (typeof restrict_search == 'object') {
       var search_result = $(restrict_search).find(search_criteria);
@@ -94,17 +82,17 @@ $.frontendAssets = {
     }
 
     search_result.each(function(key, element) {
-      var element_init_classes = $.grep(
+      $.grep(
         $(element)
           .attr('class')
           .split(' '),
         function(s) {
           return s.match(new RegExp('init-'));
         }
-      );
-      element_init_classes.forEach(function(class_name) {
+      ).forEach(function(class_name) {
         var extension = class_name.replace('init-', '');
         if (typeof $.frontendAssets.scripts[extension] != 'undefined') {
+          $(element).addClass('inited');
           $(element).on('extension::' + extension + '::init', $.frontendAssets.scripts[extension]);
           $(element).trigger('extension::' + extension + '::init');
         }
@@ -119,6 +107,15 @@ $.frontendAssets = {
     $.frontendAssets.captureTrigger(e.type);
     return trigger.apply(this, arguments);
   };
+
+  $.each(['show'], function (i, ev) {
+    var el = $.fn[ev];
+    $.fn[ev] = function () {
+      $.frontendAssets.init(null, $(this));
+      return el.apply(this, arguments);
+    };
+  });
+
 })(jQuery);
 
 $(function() {
