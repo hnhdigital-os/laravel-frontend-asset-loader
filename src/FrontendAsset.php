@@ -254,7 +254,7 @@ class FrontendAsset
             self::$containers[$class_name] = new $class_name(...$class_settings);
         }
 
-        if (!empty($config)) {
+        if (!empty($config) && method_exists(self::$containers[$class_name], 'config')) {
             self::$containers[$class_name]->config(...$config);
         }
     }
