@@ -51,16 +51,18 @@ class ServiceProvider extends BaseServiceProvider
             return "<?php FrontendAsset::addStyle(ob_get_clean(), '".$name."'); ?>";
         });
 
-        blade::directive('resources', function ($template) {
-            $template = addslashes(substr($template, 1, -1));
+        blade::directive('resources', function ($name) {
+            $name = trim($name, "'\"");
+            $name = "'$name'";
 
-            return "<?php FrontendAsset::controller(['js', 'css'], '$template'); ?>";
+            return "<?php FrontendAsset::controller(['js', 'css'], $name); ?>";
         });
 
-        blade::directive('asset', function ($asset) {
-            $asset = addslashes(substr($asset, 1, -1));
+        blade::directive('asset', function ($name) {
+            $name = trim($name, "'\"");
+            $name = "'$name'";
 
-            return "<?php FrontendAsset::container('$asset'); ?>";
+            return "<?php FrontendAsset::container($name); ?>";
         });
     }
 
