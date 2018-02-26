@@ -116,6 +116,17 @@ $.frontendAssets = {
     };
   });
 
+  $.each(['html'], function (i, ev) {
+    var el = $.fn[ev];
+    $.fn[ev] = function () {
+      result = el.apply(this, arguments);
+      if (arguments.length > 0 && typeof arguments[0] == 'string' && arguments[0].match(new RegExp('init-', 'm'))) {
+        $.frontendAssets.init(null, $(this));
+      }
+      return result;
+    };
+  });
+
 })(jQuery);
 
 $(function() {
