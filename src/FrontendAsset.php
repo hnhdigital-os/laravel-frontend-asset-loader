@@ -3,10 +3,18 @@
 namespace HnhDigital\LaravelFrontendAssetLoader;
 
 use Roumen\Asset\Asset as RoumenAsset;
+use Html;
 
 class FrontendAsset
 {
     private static $containers = [];
+
+    /**
+     * Meta entries.
+     *
+     * @var array
+     */
+    private static $meta = [];
 
     /**
      * The domain for assets.
@@ -57,7 +65,7 @@ class FrontendAsset
     private $loaded_inline = [];
 
     /**
-     * Add the asset using our version of the exliser loader.
+     * Add the asset using our version of the exlixer loader.
      *
      * @param string $file
      * @param string $params
@@ -140,11 +148,42 @@ class FrontendAsset
     }
 
     /**
+     * Add a meta attribute.
+     *
+     * @return void
+     */
+    public function addMeta($meta, $data = [])
+    {
+        if (is_string($meta)) {
+            $meta = [$meta => $data];
+        }
+
+        foreach ($meta as $key => $data) {
+            self::$meta[$key] = $data;
+        }
+    }
+
+    /**
+     * Return meta.
+     *
+     * @return array
+     */
+    public function meta()
+    {
+        foreach(self::$meta as $name => $attributes) {
+            echo Html::meta()
+                ->name(array_has($attributes, 'config.noname') ? false : $name)
+                ->addAttributes(array_except($attributes, ['config']));
+            echo "\n";
+        }
+    }
+
+    /**
      * Return CSS.
      *
      * @param array $arguments
      *
-     * @return string
+     * @return void
      */
     public function css(...$arguments)
     {
