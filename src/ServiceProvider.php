@@ -59,8 +59,9 @@ class ServiceProvider extends BaseServiceProvider
         });
 
         blade::directive('asset', function ($name) {
-            $name = trim($name, "'\"");
-            $name = "'$name'";
+            if (strlen(trim($name, "'\"[]")) == strlen($name)) {
+                $name = "'$name'";
+            }
 
             return "<?php FrontendAsset::container($name); ?>";
         });
