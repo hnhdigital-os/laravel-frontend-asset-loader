@@ -239,6 +239,19 @@ class FrontendAsset
     }
 
     /**
+     * Add a package.
+     *
+     * @param array $container_settings
+     * @param array $config
+     *
+     * @return void
+     */
+    public static function package($container_settings, $config = [])
+    {
+        self::loadContainer($container_settings, $config);
+    }
+
+    /**
      * Add new asset after another asset in its array.
      *
      * @param array $container_settings
@@ -294,6 +307,9 @@ class FrontendAsset
         }
 
         if (!empty($config) && method_exists(self::$containers[$class_name], 'config')) {
+            if (!is_array($config)) {
+                $config = [$config];
+            }
             self::$containers[$class_name]->config(...$config);
         }
     }
