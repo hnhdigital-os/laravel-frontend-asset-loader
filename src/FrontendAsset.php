@@ -438,6 +438,11 @@ class FrontendAsset
         return '';
     }
 
+    /**
+     * Enforce HTTP2
+     *
+     * @return void
+     */
     public static function http2()
     {
         foreach (RoumenAsset::$css as $file) {
@@ -448,5 +453,40 @@ class FrontendAsset
                 header('Link: <'.$file.'>; rel=preload; as=script;', false);
             }
         }
+    }
+
+    /**
+     * Output header html.
+     *
+     * @return string
+     */
+    public function head()
+    {
+        $output = '';
+        $output .= $this->meta();
+        $output .= $this->css();
+        $output .= $this->less();
+        $output .= $this->styles('header');
+        $output .= $this->js('header');
+        $output .= $this->scripts('header');
+
+        return $output;
+    }
+
+    /**
+     * Output footer html.
+     *
+     * @return string
+     */
+    public function footer()
+    {
+        $output = '';
+        $output .= $this->js();
+        $output .= $this->scripts('footer');
+        $output .= $this->scripts('inline');
+        $output .= $this->js('ready');
+        $output .= $this->scripts('ready');
+
+        return $output;
     }
 }
