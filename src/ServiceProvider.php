@@ -58,6 +58,13 @@ class ServiceProvider extends BaseServiceProvider
             return "<?php FrontendAsset::controller(['js', 'css'], $name); ?>";
         });
 
+        blade::directive('frontendAsset', function ($name) {
+            $name = trim($name, "'\"");
+            $name = "$name";
+
+            return "<?php FrontendAsset::$name(); ?>";
+        });
+
         blade::directive('asset', function ($name) {
             if (strlen(trim($name, "'\"[]")) == strlen($name)) {
                 $name = "'$name'";
