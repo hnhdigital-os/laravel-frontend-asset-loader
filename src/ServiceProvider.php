@@ -21,7 +21,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/config.default.php', 'frontend-assets');
+        $this->mergeConfigFrom(__DIR__.'/../config/config.default.php', 'hnhdigital.assets');
+        $this->mergeConfigFrom(__DIR__.'/../config/config.packages.php', 'hnhdigital.assets.packages');
 
         $this->app->bind('FrontendAsset', function () {
             return new FrontendAsset();
@@ -36,7 +37,7 @@ class ServiceProvider extends BaseServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../config/config.php' => config_path('frontend-assets.php'),
+            __DIR__.'/../config/config.php' => config_path('hnhdigital/assets.php'),
         ]);
 
         blade::directive('captureScript', function ($name) {

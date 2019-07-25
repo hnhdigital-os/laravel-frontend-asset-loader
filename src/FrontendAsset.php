@@ -54,7 +54,7 @@ class FrontendAsset
      */
     public function version($name, $version = false)
     {
-        return (empty($version)) ? config('frontend-assets.'.$name.'.1') : $version;
+        return (empty($version)) ? config('hnhdigital.assets.packages.'.$name.'.1') : $version;
     }
 
     /**
@@ -298,7 +298,7 @@ class FrontendAsset
 
         $class_name = false;
 
-        if ($asset_details = config('frontend-assets.'.$asset_name, false)) {
+        if ($asset_details = config('hnhdigital.assets.packages.'.$asset_name, false)) {
             $class_name = array_get($asset_details, 0, false);
         }
 
@@ -364,7 +364,7 @@ class FrontendAsset
 
             $full_path = '';
 
-            if (env('APP_ENV') == 'local') {
+            if (app()->environment() == 'local') {
                 if (file_exists($local_file_path)) {
                     $full_path = $local_file_path;
                 } else {
@@ -388,7 +388,7 @@ class FrontendAsset
     public function loadFile($file_name, $extension, $full_path = '')
     {
         if (array_has(config('rev-manifest', []), $file_name) || (!empty($full_path) && file_exists($full_path))) {
-            if (env('APP_ASSET_INLINE', false)) {
+            if (config('hnhdigital.assets.inline', false)) {
                 if (!isset($this->loaded_inline[$full_path])) {
                     $contents = file_get_contents($full_path);
                     $contents = '/* '.$file_name." */ \n\n".$contents;
@@ -420,13 +420,13 @@ class FrontendAsset
         }
 
         try {
-            if (env('APP_ASSET_SOURCE', 'build') === 'build') {
+            if (config('hnhdigital.assets.source', 'build') === 'build') {
                 $elixir_path = elixir($file);
 
                 return $elixir_path;
             }
 
-            return '/'.env('APP_ASSET_SOURCE').'/'.$file;
+            return '/'.config('hnhdigital.assets.source').'/'.$file;
         } catch (\InvalidArgumentException $e) {
             if (file_exists(public_path().'/'.$file)) {
                 return $file;
