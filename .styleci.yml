@@ -1,1 +1,7 @@
-php: true
+preset: recommended
+risky: true
+finder:
+  exclude:
+    - tests
+    - vendor
+  name: "*.php"
