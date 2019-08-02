@@ -12,19 +12,7 @@ This package has been developed by H&H|Digital, an Australian botique developer.
 
 Via composer:
 
-`$ composer require hnhdigital-os/laravel-frontend-asset-loader  ~1.0`
-
-This package's service provider will autoload from Laravel 5.5.
-
-To enable the service provider in versions prior to Laravel 5.4, edit the config/app.php:
-
-```php
-    'providers' => [
-        ...
-        HnhDigital\LaravelFrontendAssetLoader\ServiceProvider::class,
-        ...
-    ];
-```
+`$ composer require hnhdigital-os/laravel-frontend-asset-loader  ~2.0`
 
 Enable the facade by editing config/app.php:
 
@@ -37,7 +25,6 @@ Enable the facade by editing config/app.php:
 ```
 
 ## Usage
-
 
 
 ## Contributing
