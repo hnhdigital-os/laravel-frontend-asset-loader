@@ -1,6 +1,5 @@
 <?php
 
-
 function hookAddClassHtmlTag($class_name)
 {
     if (strpos($class_name, 'init-') !== false) {
