@@ -10,7 +10,7 @@ use Arr;
 abstract class PackageAbstract
 {
     /**
-     * Package name
+     * Package name.
      *
      * @var string
      */
@@ -41,7 +41,7 @@ abstract class PackageAbstract
     /**
      * Check if CDN is enabled.
      *
-     * @return boolean
+     * @return bool
      */
     public function isCdn()
     {

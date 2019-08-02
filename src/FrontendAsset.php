@@ -2,7 +2,7 @@
 
 namespace HnhDigital\LaravelFrontendAssetLoader;
 
-/**
+/*
  * Frontend Asset Management
  *
  * @author Rocco Howard <rocco@hnh.digital>
@@ -111,7 +111,7 @@ class FrontendAsset
      * Is secure?
      *
      * @return string
-    */
+     */
     public function setSecure($secure)
     {
         $this->secure = $secure;
@@ -123,20 +123,20 @@ class FrontendAsset
      * Is secure?
      *
      * @return string
-    */
+     */
     public function isSecure()
     {
         return $this->secure;
     }
 
     /**
-     * Identify where to add an asset:
+     * Identify where to add an asset:.
      *
      * @param string $path
      * @param string $location
      *
      * @return array
-    */
+     */
     public function parseExtension($path, $location = null)
     {
         $key = null;
@@ -203,9 +203,9 @@ class FrontendAsset
      */
     private function getAssetByType($type, $location)
     {
-        return $this->assets->filter(function($asset, $hash) use ($type, $location) {
+        return $this->assets->filter(function ($asset, $hash) use ($type, $location) {
             return $asset->location === $location && $asset->type === $type;
-        })->sortBy(function($asset, $hash) {
+        })->sortBy(function ($asset, $hash) {
             return $asset->priority;
         });
     }
@@ -216,6 +216,7 @@ class FrontendAsset
      * @param string $type
      * @param string $content
      * @param string $location
+     *
      * @return void
      */
     public function content($type, $content, $location)
@@ -251,7 +252,7 @@ class FrontendAsset
     /**
      * Get the package integrity.
      *
-     * @param string $name 
+     * @param string $name
      *
      * @return string
      */
@@ -267,7 +268,7 @@ class FrontendAsset
     /**
      * Get the package integrity.
      *
-     * @param string $name 
+     * @param string $name
      *
      * @return string
      */
@@ -291,7 +292,7 @@ class FrontendAsset
     /**
      * Get the package integrity.
      *
-     * @param string $name 
+     * @param string $name
      *
      * @return string
      */
@@ -553,7 +554,7 @@ class FrontendAsset
     }
 
     /**
-     * Enforce HTTP2
+     * Enforce HTTP2.
      *
      * @return void
      */
@@ -603,6 +604,7 @@ class FrontendAsset
 
     /**
      * Get the version of the given resource.
+     *
      * @deprecated 2.0.0 Use packages()
      *
      * @return string
@@ -614,6 +616,7 @@ class FrontendAsset
 
     /**
      * Load an assets container (it will load the individual files).
+     *
      * @deprecated 2.0.0 Use packages()
      *
      * @param array $arguments
@@ -627,6 +630,7 @@ class FrontendAsset
 
     /**
      * Add a package.
+     *
      * @deprecated 2.0.0 Use package()
      *
      * @param array $container_settings
@@ -641,6 +645,7 @@ class FrontendAsset
 
     /**
      * Add new asset after another asset in its array.
+     *
      * @deprecated 2.0.0 Use package()
      *
      * @param array $container_settings
@@ -654,6 +659,7 @@ class FrontendAsset
 
     /**
      * Autoload assets for a given path.
+     *
      * @deprecated 2.0.0 Use autoloadAssets()
      *
      * @param array  $extensions
@@ -665,5 +671,4 @@ class FrontendAsset
     {
         return $this->autoloadAssets($extensions, $path);
     }
-
 }

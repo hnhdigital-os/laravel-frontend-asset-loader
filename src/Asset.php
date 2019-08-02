@@ -7,7 +7,6 @@ namespace HnhDigital\LaravelFrontendAssetLoader;
  *
  * @author Rocco Howard <rocco@hnh.digital>
  */
-
 class Asset
 {
     private $path;
@@ -20,7 +19,7 @@ class Asset
     /**
      * Priority of asset.
      *
-     * @var integer
+     * @var int
      */
     private $priority = 100;
 
@@ -75,7 +74,7 @@ class Asset
     public function setPath($path)
     {
         if (stripos($path, base_path()) === false) {
-           $path = app('FrontendAsset')->url($path);
+            $path = app('FrontendAsset')->url($path);
         }
 
         $this->path = $path;
@@ -208,17 +207,17 @@ class Asset
             return $this->path;
         }
 
-        if ( app('FrontendAsset')->getDomain() === '/' && app()->environment() !== 'local') {
+        if (app('FrontendAsset')->getDomain() === '/' && app()->environment() !== 'local') {
             return asset($this->path, app('FrontendAsset')->isSecure());
         }
 
-        return rtrim( app('FrontendAsset')->getDomain(), '/') .'/' . ltrim($this->path, '/');
+        return rtrim(app('FrontendAsset')->getDomain(), '/').'/'.ltrim($this->path, '/');
     }
 
     /**
      * Is this asset external?
      *
-     * @return boolean
+     * @return bool
      */
     public function isExternal()
     {
@@ -258,7 +257,7 @@ class Asset
 
     /**
      * Render attributes for this asset.
-     * 
+     *
      * @return string
      */
     private function renderAttributes()
@@ -280,7 +279,7 @@ class Asset
      * Render this asset inline.
      *
      * @param string $location
-     * 
+     *
      * @return string
      */
     private function renderInline($location)
@@ -312,7 +311,6 @@ class Asset
 
     private function renderReady()
     {
-        
     }
 
     /**
