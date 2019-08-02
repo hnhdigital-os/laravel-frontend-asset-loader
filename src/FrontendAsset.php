@@ -2,26 +2,86 @@
 
 namespace HnhDigital\LaravelFrontendAssetLoader;
 
-use Roumen\Asset\Asset as RoumenAsset;
+/**
+ * Frontend Asset Management
+ *
+ * @author Rocco Howard <rocco@hnh.digital>
+ */
+
+use Arr;
 use Html;
 
 class FrontendAsset
 {
-    private static $containers = [];
+    /**
+     * The domain for assets.
+     *
+     * @var string
+     */
+    private $domain = '/';
+
+    /**
+     * Secure?
+     *
+     * @var string
+     */
+    private $secure = false;
+
+    /**
+     * Assets.
+     *
+     * @var array
+     */
+    private $assets = [];
+
+    /**
+     * Packages.
+     *
+     * @var array
+     */
+    private $packages = [];
 
     /**
      * Meta entries.
      *
      * @var array
      */
-    private static $meta = [];
+    private $meta = [];
 
     /**
-     * The domain for assets.
+     * Extension mapping.
      *
-     * @var string
+     * @var array
      */
-    protected static $domain;
+    private $extension_mapping = [
+        'css'  => ['css'],
+        'js'   => ['js'],
+    ];
+
+    /**
+     * Extension mapping.
+     *
+     * @var array
+     */
+    private $extension_default_locations = [
+        'css'  => 'header',
+        'js'   => 'footer',
+    ];
+
+    public function __construct()
+    {
+        $this->assets = collect();
+    }
+
+    /**
+     * Is CDN activated?
+     *
+     * @return bool
+     */
+    public function cdn()
+    {
+        return config('hnhdigital.assets.cdn', true);
+    }
 
     /**
      * Set the domain.
@@ -32,7 +92,7 @@ class FrontendAsset
      */
     public function setDomain($domain)
     {
-        self::$domain = rtrim($domain, '/');
+        $this->domain = rtrim($domain, '/');
 
         return $this;
     }
@@ -44,107 +104,210 @@ class FrontendAsset
      */
     public function getDomain()
     {
-        return self::$domain;
+        return $this->domain;
     }
 
     /**
-     * Get the version of the given resource.
+     * Is secure?
+     *
+     * @return string
+    */
+    public function setSecure($secure)
+    {
+        $this->secure = $secure;
+
+        return $this;
+    }
+
+    /**
+     * Is secure?
+     *
+     * @return string
+    */
+    public function isSecure()
+    {
+        return $this->secure;
+    }
+
+    /**
+     * Identify where to add an asset:
+     *
+     * @param string $path
+     * @param string $location
+     *
+     * @return array
+    */
+    public function parseExtension($path, $location = null)
+    {
+        $key = null;
+
+        foreach ($this->extension_mapping as $store => $extensions) {
+            foreach ($extensions as $ext) {
+                if (preg_match("/(\.".$ext."|\/".$ext."\?)/i", $path)) {
+                    $key = $store;
+                    break;
+                }
+            }
+        }
+
+        if (is_null($location)) {
+            $location = Arr::get($this->extension_default_locations, $key, 'footer');
+        }
+
+        return [$key, $location];
+    }
+
+    /**
+     * Add asset.
+     *
+     * @param string $path
+     * @param string $location
+     *
+     * @return void
+     */
+    public function add($path, $location = null, $attributes = [], $priority = null)
+    {
+        $asset = Asset::createByPath($path, $location, $attributes);
+
+        if (!is_null($priority)) {
+            $asset->setPriority($priority);
+        }
+
+        if (!$this->assets->has($asset->getHash())) {
+            $this->assets->put($asset->getHash(), $asset);
+        }
+
+        return $asset;
+    }
+
+    /**
+     * Add asset.
+     *
+     * @param string|array $path
+     * @param string       $location
+     *
+     * @return void
+     */
+    public function addFirst($path, $location = null, $attributes = [])
+    {
+        return $this->add($path, $location, $attributes, 1);
+    }
+
+    /**
+     * Get asset by type.
+     *
+     * @param string $type
+     * @param string $location
+     *
+     * @return Collection
+     */
+    private function getAssetByType($type, $location)
+    {
+        return $this->assets->filter(function($asset, $hash) use ($type, $location) {
+            return $asset->location === $location && $asset->type === $type;
+        })->sortBy(function($asset, $hash) {
+            return $asset->priority;
+        });
+    }
+
+    /**
+     * Add content.
+     *
+     * @param string $type
+     * @param string $content
+     * @param string $location
+     * @return void
+     */
+    public function content($type, $content, $location)
+    {
+        $asset = Asset::createByContent($path, $content, $location);
+
+        $this->assets[$asset->getHash()] = $asset;
+    }
+
+    /**
+     * Render asset type for location.
+     *
+     * @param string $type
+     * @param string $location
      *
      * @return string
      */
-    public function version($name, $version = false)
+    public function render($type, $location)
     {
-        return (empty($version)) ? config('hnhdigital.assets.packages.'.$name.'.1') : $version;
-    }
+        $result = '';
 
-    /**
-     * Track loaded inline files.
-     *
-     * @var array
-     */
-    private $loaded_inline = [];
+        $assets = $this->getAssetByType($type, $location);
 
-    /**
-     * Add the asset using our version of the exlixer loader.
-     *
-     * @param string $file
-     * @param string $params
-     * @param bool   $onUnknownExtension
-     *
-     * @return void
-     */
-    public function add($file, $params = 'footer', $onUnknownExtension = false)
-    {
-        RoumenAsset::add($this->elixir($file), $params, $onUnknownExtension);
-    }
-
-    /**
-     * Add raw script to page.
-     *
-     * @param string $style
-     * @param string $params
-     *
-     * @return void
-     */
-    public function addScript($script, $params = 'footer')
-    {
-        RoumenAsset::addScript($script, $params);
-    }
-
-    /**
-     * Reverse the order of scripts.
-     *
-     * @param string $params
-     *
-     * @return void
-     */
-    public function reverseStylesOrder($params = 'footer')
-    {
-        if (isset(RoumenAsset::$scripts[$params])) {
-            RoumenAsset::$scripts[$params] = array_reverse(RoumenAsset::$scripts[$params], true);
+        foreach ($assets as $asset) {
+            $render = $asset->render();
+            $render = is_null($render) ? '' : $render."\n";
+            $result .= $render;
         }
+
+        return $result;
     }
 
     /**
-     * Add raw styling to page.
+     * Get the package integrity.
      *
-     * @param string $style
-     * @param string $params
+     * @param string $name 
      *
-     * @return void
+     * @return string
      */
-    public function addStyle($style, $params = 'header')
+    public function packageInfo($name)
     {
-        RoumenAsset::addStyle($style, $params);
+        if (config()->has('hnhdigital.assets.packages.'.$name)) {
+            return config('hnhdigital.assets.packages.'.$name);
+        }
+
+        return [];
     }
 
     /**
-     * Add the asset first using our version of the exliser loader.
+     * Get the package integrity.
      *
-     * @param string $file
-     * @param string $params
-     * @param bool   $onUnknownExtension
+     * @param string $name 
      *
-     * @return return string
+     * @return string
      */
-    public function addFirst($file, $params = 'footer', $onUnknownExtension = false)
+    public function packageVersion($name, $version = false)
     {
-        RoumenAsset::addFirst($this->elixir($file), $params, $onUnknownExtension);
+        if (!empty($version)) {
+            return $version;
+        }
+
+        if (config()->has('hnhdigital.assets.packages.'.$name.'.version')) {
+            return config('hnhdigital.assets.packages.'.$name.'.version');
+
+        // Backwards compatibility.
+        } elseif (config()->has('hnhdigital.assets.packages.'.$name.'.0')) {
+            return config('hnhdigital.assets.packages.'.$name.'.class');
+        }
+
+        return false;
     }
 
     /**
-     * Add new asset after another asset in its array.
+     * Get the package integrity.
      *
-     * @param string       $file1
-     * @param string       $file2
-     * @param string|array $params
-     * @param bool         $onUnknownExtension
+     * @param string $name 
      *
-     * @return void
+     * @return string
      */
-    public function addAfter($file1, $file2, $params = 'footer', $onUnknownExtension = false)
+    public function packageIntegrity($name, $asset = '')
     {
-        RoumenAsset::addAfter($this->elixir($file1), $this->elixir($file2), $params, $onUnknownExtension);
+        $integrity = config('hnhdigital.assets.packages.'.$name.'.integrity', []);
+
+        if (is_array($integrity)) {
+            if (isset($integrity[$asset])) {
+                return $integrity[$asset];
+            } else {
+                return '';
+            }
+        }
+
+        return $integrity;
     }
 
     /**
@@ -159,7 +322,7 @@ class FrontendAsset
         }
 
         foreach ($meta as $key => $data) {
-            self::$meta[$key] = $data;
+            $this->meta[$key] = $data;
         }
     }
 
@@ -170,201 +333,111 @@ class FrontendAsset
      */
     public function meta()
     {
-        foreach(self::$meta as $name => $attributes) {
+        foreach ($this->meta as $name => $attributes) {
             echo Html::meta()
-                ->name(array_has($attributes, 'config.noname') ? false : $name)
-                ->addAttributes(array_except($attributes, ['config']));
+                ->name(Arr::has($attributes, 'config.noname') ? false : $name)
+                ->addAttributes(Arr::except($attributes, ['config']));
             echo "\n";
         }
     }
 
     /**
-     * Return CSS.
+     * Load muiltiple packages.
      *
      * @param array $arguments
      *
      * @return void
      */
-    public function css(...$arguments)
+    public function packages(...$arguments)
     {
-        return RoumenAsset::css(...$arguments);
-    }
+        if (!isset($arguments[0])) {
+            return;
+        }
 
-    /**
-     * Return LESS.
-     *
-     * @param array $arguments
-     *
-     * @return string
-     */
-    public function less(...$arguments)
-    {
-        return RoumenAsset::less(...$arguments);
-    }
+        $container_list = $arguments[0];
 
-    /**
-     * Return styles.
-     *
-     * @param array $arguments
-     *
-     * @return string
-     */
-    public function styles(...$arguments)
-    {
-        return RoumenAsset::styles(...$arguments);
-    }
-
-    /**
-     * Return javascript.
-     *
-     * @param array $arguments
-     *
-     * @return string
-     */
-    public function js(...$arguments)
-    {
-        return RoumenAsset::js(...$arguments);
-    }
-
-    /**
-     * Return scripts.
-     *
-     * @param array $arguments
-     *
-     * @return string
-     */
-    public function scripts(...$arguments)
-    {
-        return RoumenAsset::scripts(...$arguments);
+        foreach ($container_list as $container_settings) {
+            $this->package($container_settings);
+        }
     }
 
     /**
      * Add a package.
      *
-     * @param array $container_settings
-     * @param array $config
-     *
-     * @return void
-     */
-    public static function package($container_settings, $config = [])
-    {
-        self::loadContainer($container_settings, $config);
-    }
-
-    /**
-     * Add new asset after another asset in its array.
-     *
-     * @param array $container_settings
-     *
-     * @return void
-     */
-    public static function container($container_settings, $config = [])
-    {
-        self::loadContainer($container_settings, $config);
-    }
-
-    /**
-     * Load an assets container (it will load the individual files).
-     *
-     * @param array $arguments
-     *
-     * @return void
-     */
-    public function containers(...$arguments)
-    {
-        if (isset($arguments[0])) {
-            $container_list = $arguments[0];
-            foreach ($container_list as $container_settings) {
-                $this->loadContainer($container_settings);
-            }
-        }
-    }
-
-    /**
-     * Load an assets container (it will load the individual files).
-     *
      * @param array $asset_settings
      *
      * @return void
      */
-    private static function loadContainer($class_settings, $config = [])
+    public function package($settings, $config = [])
     {
-        if (is_array($class_settings)) {
-            $asset_name = array_shift($class_settings);
+        if (is_array($settings)) {
+            $asset_name = array_shift($settings);
         } else {
-            $asset_name = $class_settings;
-            $class_settings = [];
+            $asset_name = $settings;
+            $settings = [];
         }
 
         $class_name = false;
 
         if ($asset_details = config('hnhdigital.assets.packages.'.$asset_name, false)) {
-            $class_name = array_get($asset_details, 0, false);
+            $class_name = Arr::get($asset_details, 'class', Arr::get($asset_details, 0, false));
         }
 
-        if ($class_name !== false && !isset(self::$containers[$class_name]) && class_exists($class_name)) {
-            self::$containers[$class_name] = new $class_name(...$class_settings);
-        }
-
-        if (!empty($config) && method_exists(self::$containers[$class_name], 'config')) {
-            if (!is_array($config)) {
-                $config = [$config];
-            }
-            self::$containers[$class_name]->config(...$config);
+        if ($class_name !== false && !isset($this->packages[$class_name]) && class_exists($class_name)) {
+            $this->packages[$class_name] = new $class_name(...$settings);
+            $this->callPackage($class_name, 'load', $config);
         }
     }
 
     /**
-     * Load local files for a given controller.
+     * Call package method.
      *
-     * @param array  $file_extensions
-     * @param string $file
-     *
-     * @return void
+     * @return mixed
      */
-    public function controller($file_extensions, $file)
+    public function callPackage($class_name, $method, ...$args)
     {
-        // Only look in a single file extension folder.
-        if (!is_array($file_extensions)) {
-            $file_extensions = [$file_extensions];
-        }
-
-        // Replace dots with slashes.
-        $file = str_replace('.', '/', $file);
-
-        if (substr($file, -1) === '*') {
-            $folder = dirname(substr($file, 0, -1));
-            $base_folder = basename(substr($file, 0, -1));
-
-            foreach ($file_extensions as $extension) {
-                $extension_folder = $folder.'/'.$extension.'/'.$base_folder;
-                $folder_contents = scandir(resource_path().'/views/'.$extension_folder);
-
-                foreach ($folder_contents as $folder_file) {
-                    if ($folder_file == '.' || $folder_file == '..') {
-                        continue;
-                    }
-
-                    $full_path = resource_path().'/views/'.$extension_folder.'/'.$folder_file;
-                    $file_name = $extension_folder.'/'.$folder_file;
-
-                    $this->loadFile($file_name, $extension, $full_path);
-                }
-            }
-
+        if (!isset($this->packages[$class_name])) {
             return;
         }
 
+        if (!is_callable([$this->packages[$class_name], $method])) {
+            return;
+        }
+
+        return $this->packages[$class_name]->$method(...$args);
+    }
+
+    /**
+     * Autoload assets for a given path.
+     *
+     * @param array  $extensions
+     * @param string $path
+     *
+     * @return void
+     */
+    public function autoloadAssets($extensions, $path)
+    {
+        // Force array.
+        $extensions = Arr::wrap($extensions);
+
+        // Replace dots with slashes.
+        $path = str_replace('.', '/', $path);
+
+        if (substr($path, -1) === '*') {
+            return $this->autoloadWildcardAssets($extensions, substr($path, 0, -1));
+        }
+
         // Go through each file extension folder.
-        foreach ($file_extensions as $extension) {
-            $file_name = $file.'.'.$extension;
+        foreach ($extensions as $extension) {
+            $file_name = $path.'.'.$extension;
 
             $local_file_path = dirname(resource_path().'/views/'.$file_name);
             $local_file_path .= '/'.$extension.'/'.basename($file_name);
 
             $full_path = '';
 
-            if (app()->environment() == 'local') {
+            // Adjust for local environment.
+            if (app()->environment() === 'local') {
                 if (file_exists($local_file_path)) {
                     $full_path = $local_file_path;
                 } else {
@@ -372,12 +445,48 @@ class FrontendAsset
                 }
             }
 
-            $this->loadFile($file_name, $extension, $full_path);
+            $this->loadAsset($file_name, $extension, $full_path);
         }
     }
 
     /**
-     * Load a file.
+     * Autoload assets for a given file path.
+     *
+     * @param array  $extensions
+     * @param string $file
+     *
+     * @return void
+     */
+    public function autoloadWildcardAssets($extensions, $path)
+    {
+        // Force array.
+        $extensions = Arr::wrap($extensions);
+
+        // Replace dots with slashes.
+        $path = str_replace('.', '/', $file);
+
+        $root_path = dirname($path);
+        $filename = basename($path);
+
+        foreach ($extensions as $extension) {
+            $extension_dir = $root_path.'/'.$extension.'/'.$filename;
+            $scanned_paths = scandir(resource_path().'/views/'.$extension_dir);
+
+            foreach ($scanned_paths as $scanned_file) {
+                if ($scanned_file == '.' || $scanned_file == '..') {
+                    continue;
+                }
+
+                $full_path = resource_path().'/views/'.$extension_dir.'/'.$scanned_file;
+                $file_name = $extension_dir.'/'.$scanned_file;
+
+                $this->loadAsset($file_name, $extension, $full_path);
+            }
+        }
+    }
+
+    /**
+     * Load an asset.
      *
      * @param string $file_name
      * @param string $extension
@@ -385,54 +494,59 @@ class FrontendAsset
      *
      * @return void
      */
-    public function loadFile($file_name, $extension, $full_path = '')
+    public function loadAsset($file_name, $extension, $full_path = '')
     {
-        if (array_has(config('rev-manifest', []), $file_name) || (!empty($full_path) && file_exists($full_path))) {
-            if (config('hnhdigital.assets.inline', false)) {
-                if (!isset($this->loaded_inline[$full_path])) {
-                    $contents = file_get_contents($full_path);
-                    $contents = '/* '.$file_name." */ \n\n".$contents;
-                    if ($extension == 'js') {
-                        $this->addScript($contents, 'inline');
-                    } else {
-                        $this->addStyle($contents);
-                    }
-                    $this->loaded_inline[$full_path] = true;
-                }
-            } else {
-                $this->add($file_name, 'ready');
+        // Load asset as script/link.
+        // File needs to be in the manifest.
+        if (!config('hnhdigital.assets.inline', false)) {
+
+            // File is not in the manifest.
+            if (!Arr::has(config(config('hnhdigital.assets.manifest-revisions'), []), $file_name)) {
+                return;
             }
+
+            $this->add($file_name);
+
+            return;
         }
+
+        // Path is empty or the path does not exist.
+        if (!empty($full_path) && !file_exists($full_path)) {
+            return;
+        }
+
+        // Add the file inline.
+        $this->add($full_path, 'inline');
     }
 
     /**
-     * Override standard elixir to return standard url if
-     * the exception is made (eg the file isn't versioned).
+     * Get the URL for given path.
      *
-     * @param string $file
+     * @param string $path
      *
      * @return return string
      */
-    public function elixir($file)
+    public function url($path)
     {
-        if (substr($file, 0, 4) === 'http') {
-            return $file;
+        // Detect path points to external url.
+        if (stripos($path, '://') !== false) {
+            return $path;
         }
 
-        try {
+        if (Arr::has(config(config('hnhdigital.assets.manifest-revisions'), []), $path)) {
             if (config('hnhdigital.assets.source', 'build') === 'build') {
-                $elixir_path = elixir($file);
-
-                return $elixir_path;
+                return '/build/'.Arr::get(config(config('hnhdigital.assets.manifest-revisions'), []), $path);
             }
 
-            return '/'.config('hnhdigital.assets.source').'/'.$file;
-        } catch (\InvalidArgumentException $e) {
-            if (file_exists(public_path().'/'.$file)) {
-                return $file;
-            } elseif (file_exists(public_path().'/assets/'.$file)) {
-                return '/assets/'.$file;
-            }
+            return '/'.config('hnhdigital.assets.source').'/'.$path;
+        }
+
+        if (file_exists(public_path().'/'.$path)) {
+            return $path;
+        }
+
+        if (file_exists(public_path().'/assets/'.$path)) {
+            return '/assets/'.$path;
         }
 
         return '';
@@ -443,15 +557,14 @@ class FrontendAsset
      *
      * @return void
      */
-    public static function http2()
+    public function http2()
     {
-        foreach (RoumenAsset::$css as $file) {
-            header('Link: <'.$file.'>; rel=preload; as=style;', false);
+        if (!config('hnhdigital.assets.http2', false)) {
+            return;
         }
-        foreach (RoumenAsset::$js as $section) {
-            foreach ($section as $file) {
-                header('Link: <'.$file.'>; rel=preload; as=script;', false);
-            }
+
+        foreach ($this->assets as $asset) {
+            $asset->http2();
         }
     }
 
@@ -460,15 +573,14 @@ class FrontendAsset
      *
      * @return string
      */
-    public function head()
+    public function header()
     {
         $output = '';
         $output .= $this->meta();
-        $output .= $this->css();
-        $output .= $this->less();
-        $output .= $this->styles('header');
-        $output .= $this->js('header');
-        $output .= $this->scripts('header');
+        $output .= $this->render('css', 'header');
+        $output .= $this->render('css', 'inline');
+        $output .= $this->render('js', 'header');
+        $output .= $this->render('js', 'header-inline');
 
         return $output;
     }
@@ -481,12 +593,77 @@ class FrontendAsset
     public function footer()
     {
         $output = '';
-        $output .= $this->js();
-        $output .= $this->scripts('footer');
-        $output .= $this->scripts('inline');
-        $output .= $this->js('ready');
-        $output .= $this->scripts('ready');
+        $output .= $this->render('css', 'footer');
+        $output .= $this->render('js', 'footer');
+        $output .= $this->render('js', 'footer-inline');
+        $output .= $this->render('js', 'ready');
 
         return $output;
     }
+
+    /**
+     * Get the version of the given resource.
+     * @deprecated 2.0.0 Use packages()
+     *
+     * @return string
+     */
+    public function version(...$arguments)
+    {
+        return $this->packageVersion(...$arguments);
+    }
+
+    /**
+     * Load an assets container (it will load the individual files).
+     * @deprecated 2.0.0 Use packages()
+     *
+     * @param array $arguments
+     *
+     * @return void
+     */
+    public function containers(...$arguments)
+    {
+        return $this->packages(...$arguments);
+    }
+
+    /**
+     * Add a package.
+     * @deprecated 2.0.0 Use package()
+     *
+     * @param array $container_settings
+     * @param array $config
+     *
+     * @return void
+     */
+    public function loadContainer($container_settings, $config = [])
+    {
+        $this->package($container_settings, $config);
+    }
+
+    /**
+     * Add new asset after another asset in its array.
+     * @deprecated 2.0.0 Use package()
+     *
+     * @param array $container_settings
+     *
+     * @return void
+     */
+    public function container($container_settings, $config = [])
+    {
+        $this->package($container_settings, $config);
+    }
+
+    /**
+     * Autoload assets for a given path.
+     * @deprecated 2.0.0 Use autoloadAssets()
+     *
+     * @param array  $extensions
+     * @param string $path
+     *
+     * @return void
+     */
+    public function controller($extensions, $path)
+    {
+        return $this->autoloadAssets($extensions, $path);
+    }
+
 }

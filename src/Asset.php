@@ -1,0 +1,351 @@
+<?php
+
+namespace HnhDigital\LaravelFrontendAssetLoader;
+
+/**
+ * Asset.
+ *
+ * @author Rocco Howard <rocco@hnh.digital>
+ */
+
+class Asset
+{
+    private $path;
+    private $content;
+    private $location;
+    private $type;
+    private $hash;
+    private $attributes = [];
+
+    /**
+     * Priority of asset.
+     *
+     * @var integer
+     */
+    private $priority = 100;
+
+    /**
+     * Create asset by path factory.
+     *
+     * @param string $path
+     * @param string $location
+     * @param array  $attributes
+     *
+     * @return string
+     */
+    public static function createByPath($path, $location, $attributes = [])
+    {
+        $asset = (new self())
+            ->setPath($path);
+
+        list($type, $location) = app('FrontendAsset')->parseExtension($asset->getPath(), $location);
+
+        $asset->setType($type)
+            ->setLocation($location)
+            ->setAttributes($attributes);
+
+        return $asset;
+    }
+
+    /**
+     * Create asset by path factory.
+     *
+     * @param string $path
+     * @param string $location
+     *
+     * @return string
+     */
+    public static function createByContent($type, $content, $location)
+    {
+        $asset = (new self())
+            ->setType($type)
+            ->setContent($content)
+            ->setLocation($location);
+
+        return $asset;
+    }
+
+    /**
+     * Set path.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function setPath($path)
+    {
+        if (stripos($path, base_path()) === false) {
+           $path = app('FrontendAsset')->url($path);
+        }
+
+        $this->path = $path;
+
+        $this->hash = hash('sha256', $this->path);
+
+        return $this;
+    }
+
+    /**
+     * Get path.
+     *
+     * @return string
+     */
+    public function getPath()
+    {
+        return $this->path;
+    }
+
+    /**
+     * Set the type.
+     *
+     * @param string $type
+     *
+     * @return string
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Get type.
+     *
+     * @return string
+     */
+    public function getHash()
+    {
+        return $this->hash;
+    }
+
+    /**
+     * Get type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * Set the location.
+     *
+     * @param string $location
+     *
+     * @return string
+     */
+    public function setLocation($location)
+    {
+        $this->location = $location;
+
+        return $this;
+    }
+
+    /**
+     * Get the location.
+     *
+     * @return string
+     */
+    public function getLocation()
+    {
+        return $this->location;
+    }
+
+    /**
+     * Set the content.
+     *
+     * @param string $content
+     *
+     * @return string
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
+
+        $this->hash = hash('sha256', $this->content);
+
+        return $this;
+    }
+
+    /**
+     * Set the priority.
+     *
+     * @param string $priority
+     *
+     * @return string
+     */
+    public function setPriority($priority)
+    {
+        $this->priority = $priority;
+
+        return $this;
+    }
+
+    /**
+     * Set the attributes.
+     *
+     * @param string $attributes
+     *
+     * @return string
+     */
+    public function setAttributes($attributes)
+    {
+        $this->attributes = $attributes;
+
+        return $this;
+    }
+
+    /**
+     * Get the URL.
+     *
+     * @return string;
+     */
+    public function getUrl()
+    {
+        if ($this->isExternal()) {
+            return $this->path;
+        }
+
+        if ( app('FrontendAsset')->getDomain() === '/' && app()->environment() !== 'local') {
+            return asset($this->path, app('FrontendAsset')->isSecure());
+        }
+
+        return rtrim( app('FrontendAsset')->getDomain(), '/') .'/' . ltrim($this->path, '/');
+    }
+
+    /**
+     * Is this asset external?
+     *
+     * @return boolean
+     */
+    public function isExternal()
+    {
+        return !empty($this->path) && preg_match('/(https?:)?\/\//i', $this->path);
+    }
+
+    /**
+     * Render this asset for the given type and location.
+     *
+     * @param string $type
+     * @param string $location
+     *
+     * @return null|string
+     */
+    public function render()
+    {
+        $result = '';
+
+        if (stripos($this->location, 'inline') !== false || $this->location === 'ready') {
+            return $this->renderInline($this->location);
+        }
+
+        switch ($this->type) {
+            case 'styles':
+                break;
+            case 'js':
+                // type, defer, async
+                $result = '<script src="'.$this->getUrl().'"'.$this->renderAttributes().'></script>';
+                break;
+            case 'css':
+                $result = '<link rel="stylesheet" type="text/css" href="'.$this->getUrl().'"'.$this->renderAttributes().'></script>';
+                break;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Render attributes for this asset.
+     * 
+     * @return string
+     */
+    private function renderAttributes()
+    {
+        $result = '';
+
+        if (!is_array($this->attributes)) {
+            return '';
+        }
+
+        foreach ($this->attributes as $key => $value) {
+            $result .= sprintf(' %s="%s"', $key, $value);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Render this asset inline.
+     *
+     * @param string $location
+     * 
+     * @return string
+     */
+    private function renderInline($location)
+    {
+        $result = '';
+
+        if (!file_exists($this->path)) {
+            return '';
+        }
+
+        $content = file_get_contents($this->path);
+
+        if ($this->type === 'js' && $location === 'ready') {
+            $content = sprintf('$(function(){ %s });', $content);
+        }
+
+        switch ($this->type) {
+            case 'css':
+                $result = sprintf('<style type="text/css">%s</style>', $content);
+                break;
+            case 'js':
+                $result = sprintf('<script type="text/javascript">%s</script>', $content);
+                break;
+
+        }
+
+        return $result;
+    }
+
+    private function renderReady()
+    {
+        
+    }
+
+    /**
+     * Output HTTP2 header for this asset.
+     *
+     * @return void
+     */
+    public function http2()
+    {
+        if ($this->location === 'inline' || $this->location === 'ready') {
+            return;
+        }
+
+        switch ($this->type) {
+            case 'js':
+                $link_as = 'script';
+                break;
+            case 'css':
+                $link_as = 'style';
+                break;
+            default:
+                return;
+        }
+
+        header('Link: <'.$this->getUrl().'>; rel=preload; as='.$link_as.';', false);
+    }
+
+    public function __get($name)
+    {
+        if (!isset($this->$name)) {
+            return;
+        }
+
+        return $this->$name;
+    }
+}

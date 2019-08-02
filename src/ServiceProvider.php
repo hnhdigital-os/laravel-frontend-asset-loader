@@ -24,7 +24,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/config.default.php', 'hnhdigital.assets');
         $this->mergeConfigFrom(__DIR__.'/../config/config.packages.php', 'hnhdigital.assets.packages');
 
-        $this->app->bind('FrontendAsset', function () {
+        $this->app->singleton('FrontendAsset', function () {
             return new FrontendAsset();
         });
     }
@@ -56,14 +56,14 @@ class ServiceProvider extends BaseServiceProvider
             $name = trim($name, "'\"");
             $name = "'$name'";
 
-            return "<?php FrontendAsset::controller(['js', 'css'], $name); ?>";
+            return "<?php FrontendAsset::autoloadAssets(['js', 'css'], $name); ?>";
         });
 
         blade::directive('frontendAsset', function ($name) {
             $name = trim($name, "'\"");
             $name = "$name";
 
-            return "<?php FrontendAsset::$name(); ?>";
+            return "<?= FrontendAsset::$name(); ?>";
         });
 
         blade::directive('asset', function ($name) {
@@ -71,7 +71,15 @@ class ServiceProvider extends BaseServiceProvider
                 $name = "'$name'";
             }
 
-            return "<?php FrontendAsset::container($name); ?>";
+            return "<?php FrontendAsset::package($name); ?>";
+        });
+
+        blade::directive('package', function ($name) {
+            if (strlen(trim($name, "'\"[]")) == strlen($name)) {
+                $name = "'$name'";
+            }
+
+            return "<?php FrontendAsset::package($name); ?>";
         });
     }
 
