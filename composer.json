@@ -19,7 +19,7 @@
         "codeclimate/php-test-reporter": "dev-master"
     },
     "suggest": {
-        "hnhdigital-os/laravel-frontend-assets": "H&H|Digital standard assets"
+        "hnhdigital-os/laravel-frontend-asset-pack": "H&H Digital asset pack"
     },
     "autoload": {
         "files": [
