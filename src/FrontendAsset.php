@@ -517,7 +517,7 @@ class FrontendAsset
         }
 
         // Add the file inline.
-        $this->add($full_path, 'inline');
+        $this->add($full_path, 'footer-inline');
     }
 
     /**
