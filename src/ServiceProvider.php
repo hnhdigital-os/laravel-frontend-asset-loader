@@ -43,27 +43,27 @@ class ServiceProvider extends BaseServiceProvider
         blade::directive('captureScript', function ($name) {
             $name = empty($name) ? 'inline' : substr(str_replace('$', '', $name), 1, -1);
 
-            return "<?php FrontendAsset::addScript(ob_get_clean(), '".$name."'); ?>";
+            return "<?php app('FrontendAsset')->add('js', ob_get_clean(), '".$name."', 'footer-inline'); ?>";
         });
 
         blade::directive('captureStyle', function ($name) {
             $name = empty($name) ? 'header' : substr(str_replace('$', '', $name), 1, -1);
 
-            return "<?php FrontendAsset::addStyle(ob_get_clean(), '".$name."'); ?>";
+            return "<?php app('FrontendAsset')->add('css', ob_get_clean(), '".$name."', 'footer-inline'); ?>";
         });
 
         blade::directive('resources', function ($name) {
             $name = trim($name, "'\"");
             $name = "'$name'";
 
-            return "<?php FrontendAsset::autoloadAssets(['js', 'css'], $name); ?>";
+            return "<?php app('FrontendAsset')->autoloadAssets(['js', 'css'], $name); ?>";
         });
 
         blade::directive('frontendAsset', function ($name) {
             $name = trim($name, "'\"");
             $name = "$name";
 
-            return "<?= FrontendAsset::$name(); ?>";
+            return "<?= app('FrontendAsset')->$name(); ?>";
         });
 
         blade::directive('asset', function ($name) {
@@ -71,7 +71,7 @@ class ServiceProvider extends BaseServiceProvider
                 $name = "'$name'";
             }
 
-            return "<?php FrontendAsset::package($name); ?>";
+            return "<?php app('FrontendAsset')->package($name); ?>";
         });
 
         blade::directive('package', function ($name) {
@@ -79,7 +79,7 @@ class ServiceProvider extends BaseServiceProvider
                 $name = "'$name'";
             }
 
-            return "<?php FrontendAsset::package($name); ?>";
+            return "<?php app('FrontendAsset')->package($name); ?>";
         });
     }
 
