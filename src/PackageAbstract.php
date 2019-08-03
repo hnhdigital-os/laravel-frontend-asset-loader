@@ -92,7 +92,7 @@ abstract class PackageAbstract
      */
     public function lookupVersion($version)
     {
-        return app('FrontendAsset')->version($this->name(), $version);
+        return app('FrontendAsset')->packageVersion($this->name(), $version);
     }
 
     /**
