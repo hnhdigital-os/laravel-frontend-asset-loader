@@ -143,7 +143,7 @@ class FrontendAsset
 
         foreach ($this->extension_mapping as $store => $extensions) {
             foreach ($extensions as $ext) {
-                if (preg_match("/(\.".$ext."|\/".$ext."\?)/i", $path)) {
+                if (preg_match("/(\.".$ext."|\/".$ext."\?)$/i", $path)) {
                     $key = $store;
                     break;
                 }
@@ -282,8 +282,8 @@ class FrontendAsset
             return config('hnhdigital.assets.packages.'.$name.'.version');
 
         // Backwards compatibility.
-        } elseif (config()->has('hnhdigital.assets.packages.'.$name.'.0')) {
-            return config('hnhdigital.assets.packages.'.$name.'.class');
+        } elseif (config()->has('hnhdigital.assets.packages.'.$name.'.1')) {
+            return config('hnhdigital.assets.packages.'.$name.'.1');
         }
 
         return false;
