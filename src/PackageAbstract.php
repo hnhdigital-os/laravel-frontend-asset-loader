@@ -24,6 +24,13 @@ abstract class PackageAbstract
     protected $version;
 
     /**
+     * Disable calling method.
+     *
+     * @var string
+     */
+    protected $disable_method = [];
+
+    /**
      * Default constructor.
      *
      * @param bool $version
@@ -58,9 +65,9 @@ abstract class PackageAbstract
         $this->callMethod('before');
 
         // If the package provides cdn/local methods.
-        if ($this->isCdn()) {
+        if ($this->isCdn() && !in_array('cdn', $this->disable_method)) {
             $this->callMethod('cdn');
-        } elseif (!$this->isCdn()) {
+        } elseif (!$this->isCdn() && !in_array('local', $this->disable_method)) {
             $this->callMethod('local');
         }
 
@@ -181,5 +188,15 @@ abstract class PackageAbstract
     public function addFirst(...$args)
     {
         app('FrontendAsset')->addFirst(...$args);
+    }
+
+    /**
+     * Default for local is to call the cdn.
+     *
+     * @return void
+     */
+    public function local()
+    {
+        $this->callMethod('cdn');
     }
 }
