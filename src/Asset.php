@@ -2,6 +2,8 @@
 
 namespace HnhDigital\LaravelFrontendAssetLoader;
 
+use Illuminate\Support\Arr;
+
 /**
  * Asset.
  *
@@ -236,7 +238,7 @@ class Asset
     {
         $result = '';
 
-        if (stripos($this->location, 'inline') !== false || $this->location === 'ready') {
+        if ($this->isInline()) {
             return $this->renderInline($this->location);
         }
 
@@ -314,13 +316,28 @@ class Asset
     }
 
     /**
+     * Check if this asset has been marked inline.
+     *
+     * @return boolean
+     */
+    private function isInline()
+    {
+        return stripos($this->location, 'inline') !== false || $this->location === 'ready';
+    }
+
+    /**
      * Output HTTP2 header for this asset.
      *
      * @return void
      */
     public function http2()
     {
-        if ($this->location === 'inline' || $this->location === 'ready') {
+        if ($this->isInline()) {
+            return;
+        }
+
+        // Can't prefetch when asset has an integrity check.
+        if (Arr::has($this->attributes, 'integrity')) {
             return;
         }
 
@@ -338,6 +355,13 @@ class Asset
         header('Link: <'.$this->getUrl().'>; rel=preload; as='.$link_as.';', false);
     }
 
+    /**
+     * Magic get.
+     *
+     * @param string $name
+     *
+     * @return string
+     */
     public function __get($name)
     {
         if (!isset($this->$name)) {
