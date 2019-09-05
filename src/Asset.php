@@ -318,7 +318,7 @@ class Asset
     /**
      * Check if this asset has been marked inline.
      *
-     * @return boolean
+     * @return bool
      */
     private function isInline()
     {
