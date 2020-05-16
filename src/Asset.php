@@ -271,6 +271,11 @@ class Asset
         }
 
         foreach ($this->attributes as $key => $value) {
+            if (is_int($key)) {
+                $result .= " {$value}";
+                continue;
+            }
+
             $result .= sprintf(' %s="%s"', $key, $value);
         }
 
