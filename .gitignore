@@ -1,3 +1,4 @@
 /bootstrap/compiled.php
 /vendor
 /build
+/.phpunit.result.cache
