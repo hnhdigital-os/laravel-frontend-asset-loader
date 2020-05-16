@@ -63,7 +63,7 @@ class FrontendAsset
      *
      * @var array
      */
-    private $extension_default_locations = [
+    public $extension_default_locations = [
         'css'  => 'header',
         'js'   => 'footer',
     ];
@@ -150,7 +150,7 @@ class FrontendAsset
             }
         }
 
-        if (is_null($location)) {
+        if (is_null($location) && ! is_null($key)) {
             $location = Arr::get($this->extension_default_locations, $key, 'footer');
         }
 
@@ -173,11 +173,21 @@ class FrontendAsset
             $asset->setPriority($priority);
         }
 
-        if (!$this->assets->has($asset->getHash())) {
-            $this->assets->put($asset->getHash(), $asset);
-        }
+        $this->storeAsset($asset);
 
         return $asset;
+    }
+
+    /**
+     * Store asset.
+     *
+     * @return self
+     */
+    public function storeAsset($asset)
+    {
+        $this->assets->put($asset->getHash(), $asset);
+
+        return $this;
     }
 
     /**

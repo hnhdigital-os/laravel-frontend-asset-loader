@@ -71,7 +71,7 @@ class Asset
      *
      * @param string $path
      *
-     * @return string
+     * @return self
      */
     public function setPath($path)
     {
@@ -101,11 +101,15 @@ class Asset
      *
      * @param string $type
      *
-     * @return string
+     * @return self
      */
     public function setType($type)
     {
         $this->type = $type;
+
+        if (is_null($this->location)) {
+            $this->setLocation(Arr::get(app('FrontendAsset')->extension_default_locations, $this->type, 'footer'));
+        }
 
         return $this;
     }
@@ -135,7 +139,7 @@ class Asset
      *
      * @param string $location
      *
-     * @return string
+     * @return self
      */
     public function setLocation($location)
     {
@@ -159,7 +163,7 @@ class Asset
      *
      * @param string $content
      *
-     * @return string
+     * @return self
      */
     public function setContent($content)
     {
@@ -175,7 +179,7 @@ class Asset
      *
      * @param string $priority
      *
-     * @return string
+     * @return self
      */
     public function setPriority($priority)
     {
@@ -189,7 +193,7 @@ class Asset
      *
      * @param string $attributes
      *
-     * @return string
+     * @return self
      */
     public function setAttributes($attributes)
     {
@@ -201,7 +205,7 @@ class Asset
     /**
      * Get the URL.
      *
-     * @return string;
+     * @return string
      */
     public function getUrl()
     {
@@ -224,6 +228,18 @@ class Asset
     public function isExternal()
     {
         return !empty($this->path) && preg_match('/(https?:)?\/\//i', $this->path);
+    }
+
+    /**
+     * Store asset.
+     *
+     * @return self
+     */
+    public function store()
+    {
+        app('FrontendAsset')->storeAsset($this);
+
+        return $this;
     }
 
     /**
