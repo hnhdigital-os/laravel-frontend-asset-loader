@@ -605,6 +605,7 @@ class FrontendAsset
     {
         $output = '';
         $output .= $this->render('css', 'footer');
+        $output .= $this->render('css', 'footer-inline');
         $output .= $this->render('js', 'footer');
         $output .= $this->render('js', 'footer-inline');
         $output .= $this->render('js', 'ready');
