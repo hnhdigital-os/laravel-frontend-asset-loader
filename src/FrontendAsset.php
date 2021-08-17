@@ -150,7 +150,7 @@ class FrontendAsset
             }
         }
 
-        if (is_null($location) && ! is_null($key)) {
+        if (is_null($location) && !is_null($key)) {
             $location = Arr::get($this->extension_default_locations, $key, 'footer');
         }
 
