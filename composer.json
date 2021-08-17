@@ -28,6 +28,15 @@
             "HnhDigital\\LaravelFrontendAssetLoader\\": "src/"
         }
     },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "process-timeout": 2000,
+        "sort-packages": true,
+        "platform": {
+            "php": "7.3.0"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
