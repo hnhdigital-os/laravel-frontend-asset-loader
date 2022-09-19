@@ -163,7 +163,7 @@ class FrontendAsset
      * @param string $path
      * @param string $location
      *
-     * @return void
+     * @return Asset
      */
     public function add($path, $location = null, $attributes = [], $priority = null)
     {
@@ -196,7 +196,7 @@ class FrontendAsset
      * @param string|array $path
      * @param string       $location
      *
-     * @return void
+     * @return Asset
      */
     public function addFirst($path, $location = null, $attributes = [])
     {
@@ -264,7 +264,7 @@ class FrontendAsset
      *
      * @param string $name
      *
-     * @return string
+     * @return array
      */
     public function packageInfo($name)
     {
@@ -280,7 +280,7 @@ class FrontendAsset
      *
      * @param string $name
      *
-     * @return string
+     * @return bool|string
      */
     public function packageVersion($name, $version = false)
     {
@@ -308,7 +308,7 @@ class FrontendAsset
      */
     public function packageIntegrity($name, $asset = '')
     {
-        $integrity = config('hnhdigital.assets.packages.'.$name.'.integrity', []);
+        $integrity = config('hnhdigital.assets.packages.'.$name.'.integrity', '');
 
         if (is_array($integrity)) {
             if (isset($integrity[$asset])) {
@@ -535,7 +535,7 @@ class FrontendAsset
      *
      * @param string $path
      *
-     * @return return string
+     * @return string
      */
     public function url($path)
     {
