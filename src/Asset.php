@@ -308,12 +308,18 @@ class Asset
     private function renderInline($location)
     {
         $result = '';
+        $path = $this->path;
 
-        if (!file_exists($this->path)) {
-            return '';
+        if (! file_exists($path)) {
+
+            if (! file_exists(public_path($path))) {
+                return '<!-- Missing '.public_path($path).' -->';
+            }
+
+            $path = public_path($path);
         }
 
-        $content = file_get_contents($this->path);
+        $content = file_get_contents($path);
 
         if ($this->type === 'js' && $location === 'ready') {
             $content = sprintf('$(function(){ %s });', $content);
@@ -321,10 +327,10 @@ class Asset
 
         switch ($this->type) {
             case 'css':
-                $result = sprintf('<style type="text/css">%s</style>', $content);
+                $result = sprintf('<style type="text/css"'.$this->renderAttributes().'>%s</style>', $content);
                 break;
             case 'js':
-                $result = sprintf('<script type="text/javascript">%s</script>', $content);
+                $result = sprintf('<script type="text/javascript"'.$this->renderAttributes().'>%s</script>', $content);
                 break;
 
         }
