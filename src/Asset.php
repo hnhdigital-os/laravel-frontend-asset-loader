@@ -310,9 +310,8 @@ class Asset
         $result = '';
         $path = $this->path;
 
-        if (! file_exists($path)) {
-
-            if (! file_exists(public_path($path))) {
+        if (!file_exists($path)) {
+            if (!file_exists(public_path($path))) {
                 return '<!-- Missing '.public_path($path).' -->';
             }
 
@@ -332,7 +331,6 @@ class Asset
             case 'js':
                 $result = sprintf('<script type="text/javascript"'.$this->renderAttributes().'>%s</script>', $content);
                 break;
-
         }
 
         return $result;

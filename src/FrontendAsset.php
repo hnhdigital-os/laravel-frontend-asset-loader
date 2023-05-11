@@ -510,7 +510,6 @@ class FrontendAsset
         // Load asset as script/link.
         // File needs to be in the manifest.
         if (!config('hnhdigital.assets.inline', false)) {
-
             // File is not in the manifest.
             if (!Arr::has(config(config('hnhdigital.assets.manifest-revisions'), []), $file_name)) {
                 return;
