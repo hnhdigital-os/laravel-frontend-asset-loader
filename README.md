@@ -4,15 +4,13 @@ Provides an ability to load frontend assets.
 
 [![Latest Stable Version](https://poser.pugx.org/hnhdigital-os/laravel-frontend-asset-loader/v/stable.svg)](https://packagist.org/packages/hnhdigital-os/laravel-frontend-asset-loader) [![Total Downloads](https://poser.pugx.org/hnhdigital-os/laravel-frontend-asset-loader/downloads.svg)](https://packagist.org/packages/hnhdigital-os/laravel-frontend-asset-loader) [![Latest Unstable Version](https://poser.pugx.org/hnhdigital-os/laravel-frontend-asset-loader/v/unstable.svg)](https://packagist.org/packages/hnhdigital-os/laravel-frontend-asset-loader) [![License](https://poser.pugx.org/hnhdigital-os/laravel-frontend-asset-loader/license.svg)](https://packagist.org/packages/hnhdigital-os/laravel-frontend-asset-loader)
 
-[![Build Status](https://travis-ci.org/hnhdigital-os/laravel-frontend-asset-loader.svg?branch=master)](https://travis-ci.org/hnhdigital-os/laravel-frontend-asset-loader) [![StyleCI](https://styleci.io/repos/115237252/shield?branch=master)](https://styleci.io/repos/115237252) [![Test Coverage](https://codeclimate.com/github/hnhdigital-os/laravel-frontend-asset-loader/badges/coverage.svg)](https://codeclimate.com/github/hnhdigital-os/laravel-frontend-asset-loader/coverage) [![Issue Count](https://codeclimate.com/github/hnhdigital-os/laravel-frontend-asset-loader/badges/issue_count.svg)](https://codeclimate.com/github/hnhdigital-os/laravel-frontend-asset-loader) [![Code Climate](https://codeclimate.com/github/hnhdigital-os/laravel-frontend-asset-loader/badges/gpa.svg)](https://codeclimate.com/github/hnhdigital-os/laravel-frontend-asset-loader) 
-
 This package has been developed by H&H|Digital, an Australian botique developer. Visit us at [hnh.digital](http://hnh.digital).
 
 ## Install
 
 Via composer:
 
-`$ composer require hnhdigital-os/laravel-frontend-asset-loader  ~2.0`
+`$ composer require hnhdigital-os/laravel-frontend-asset-loader ~4.0`
 
 Enable the facade by editing config/app.php:
 
